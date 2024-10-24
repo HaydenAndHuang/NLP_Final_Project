@@ -49,30 +49,34 @@ def generate_prompt(expert_0, expert_1, expert_2, expert_3, expert_4, novice_0, 
         """
     return prompt
 
-# Initialize OpenAI client with API key
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+def main():
+    # Initialize OpenAI client with API key
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key)
 
-# Read data from CSV file
-df = pd.read_csv('musiccaps-public.csv')
+    # Read data from CSV file
+    df = pd.read_csv('musiccaps-public.csv')
 
-expert_0 = df['caption'][0] # Christian
-expert_1 = df['caption'][15] # Electronic music
-expert_2 = df['caption'][19] # Gospel
-expert_3 = df['caption'][30] # rock
-expert_4 = df['caption'][41] # classical
-novice_0 = "A melancholic piano song with a female singer that would be played at church"
-novice_1 = "R&B, male singer, string, strong bass, drums, suited for an intimate setting"
-novice_2 = "Gospel music for children, bass and drums, spiritual feeling"
-novice_3 = "Rock music with guitar and drums, with angry and aggressive vocals"
-novice_4 = "Calming classical music similar to Bach with harp"
+    expert_0 = df['caption'][0] # Christian
+    expert_1 = df['caption'][15] # Electronic music
+    expert_2 = df['caption'][19] # Gospel
+    expert_3 = df['caption'][30] # rock
+    expert_4 = df['caption'][41] # classical
+    novice_0 = "A melancholic piano song with a female singer that would be played at church"
+    novice_1 = "R&B, male singer, string, strong bass, drums, suited for an intimate setting"
+    novice_2 = "Gospel music for children, bass and drums, spiritual feeling"
+    novice_3 = "Rock music with guitar and drums, with angry and aggressive vocals"
+    novice_4 = "Calming classical music similar to Bach with harp"
 
-# Generate novice prompts for each expert caption and add as a new column
-prompt = generate_prompt(expert_0, expert_1, expert_2, expert_3, expert_4, novice_0, novice_1, novice_2, novice_3, novice_4, caption)
-df['novice'] = df['caption'].apply(lambda caption: get_completion(prompt))
+    # Generate novice prompts for each expert caption and add as a new column
+    prompt = generate_prompt(expert_0, expert_1, expert_2, expert_3, expert_4, novice_0, novice_1, novice_2, novice_3, novice_4, caption)
+    df['novice'] = df['caption'].apply(lambda caption: get_completion(prompt))
 
-# Save the updated DataFrame to a new CSV
-df.to_csv('musiccaps-with-novice.csv', index=False)
+    # Save the updated DataFrame to a new CSV
+    df.to_csv('musiccaps-with-novice.csv', index=False)
 
-# Optional: Print the result
-print(df.head())
+    # Optional: Print the result
+    print(df.head())
+
+if __name__ == "__main__":
+    main()
