@@ -56,19 +56,16 @@ def generate_novice_description(expert_caption, expert_examples, novice_examples
 
 def main():
     # Read data from CSV file
-    dataframe = pd.read_csv('musiccaps-public.csv')
+    df = pd.read_csv('musiccaps-public.csv')
     
     # Read example pairs for in-context learning
     expert_novice_pair = pd.read_csv('expert_novice_captions.csv')
     expert_examples = expert_novice_pair['expert'].tolist()
     novice_examples = expert_novice_pair['novice'].tolist()
-    
-    # Limit data to the first 50 rows for testing
-    df = dataframe.head(50).copy()
 
     # Initialize the novice descriptions list
     novice_descriptions = []
-    batch_size = 10  # Adjust batch size based on API constraints and rate limits
+    batch_size = 10
 
     # Batch processing
     for i in tqdm(range(0, len(df), batch_size), desc="Generating novice descriptions"):
@@ -82,17 +79,14 @@ def main():
                 novice_examples=novice_examples
             )
             novice_descriptions.append(novice_desc)
-            time.sleep(1)
-
-        # Add delay once per batch to respect rate limits
-        
+            time.sleep(1)        
 
     # Add the novice descriptions to the dataframe
     # df['novice'] = novice_descriptions
     df.loc[:, 'novice'] = novice_descriptions
 
     # Save the updated dataframe to a new CSV file
-    df.to_csv('musiccaps-novice7777.csv', index=False)
+    df.to_csv('musiccaps-novice8888.csv', index=False)
     print("Processing complete! Results saved to 'musiccaps-novice.csv'.")
 
 if __name__ == "__main__":
