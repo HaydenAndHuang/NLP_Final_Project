@@ -69,7 +69,7 @@ def generate_novice_description(expert_caption, expert_examples, novice_examples
         print(f"Error generating description: {e}")
         return None
     
-def generate_exeprt_description(novice_caption, expert_examples, novice_examples):
+def generate_expert_description(novice_caption, expert_examples, novice_examples):
     """Generate a novice-friendly description using GPT-3.5."""
     instruction = (
         "You are a helpful assistant that converts novice-friendly music descriptions into expert descriptions.\n\n"
