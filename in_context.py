@@ -24,21 +24,15 @@ print(f"Model loaded on {device}")
 def create_baseline_prompt(novice_caption, expert_examples, novice_examples):
     """Create a prompt for LLaMA using in-context learning examples."""
     # Instruction to guide the model's behavior
-    instruction = (
-        "You are a helpful assistant that converts novice-friendly music descriptions into expert descriptions.\n\n"
-        "Transform the given input novice-level prompt into a prompt that a user with extensive music training and terminologies would use to prompt music generation models.\n\n"
-        "Keep the instruments, genres, mood, and other information that represents the essence of the music.\n\n"
-    )
-    
-    # Construct the prompt
-    prompt = "\n---\nGiven these examples below:\n\n"
-    
+    prompt = "\n---\nYou are a helpful assistant that converts novice-friendly music descriptions into expert descriptions. Given these examples below:\n\n"
+       
     # Add examples for in-context learning
     for expert, novice in zip(expert_examples, novice_examples):
         prompt += f"Novice: {novice}\nExpert: {expert}\n\n"
-        
-    # use instruction in prompt
-    prompt += instruction
+    
+    prompt += "\n---\nTransform the given input novice-level prompt into a prompt that a user with extensive music training and terminologies would use to prompt music generation models.\n\n"
+    "Keep the instruments, genres, mood, and other information that represents the essence of the music.\n\n"
+
     prompt += f"Novice: {novice_caption}\nExpert:"
     
     return prompt
