@@ -12,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 load_dotenv()
 
 # Load LLaMA 3 model and tokenizer
-model_name = "meta-llama/Meta-LLaMA-3-8B" 
+model_name = "meta-llama/Llama-3.1-8B"
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"))
 model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"))
 
@@ -23,25 +23,28 @@ print(f"Model loaded on {device}")
 
 def create_baseline_prompt(novice_caption, expert_examples, novice_examples):
     """Create a prompt for LLaMA using in-context learning examples."""
-    prompt = "\n---\nGiven these examples below:\n\n"
-    
-    # Add examples for in-context learning
-    for expert, novice in zip(expert_examples, novice_examples):
-        prompt += f"Novice: {novice}\nExpert: {expert}\n\n"
-        
-    prompt += "Convert novice music descriptions to expert level descriptions.\n\n"
-    prompt += f"Novice: {novice_caption}\nExpert:"
-    
-    return prompt
-
-def generate_expert_description(novice_caption, expert_examples, novice_examples, max_new_tokens=100, temperature=0.7):
-    """Generate an expert-level description using LLaMA 3."""
+    # Instruction to guide the model's behavior
     instruction = (
         "You are a helpful assistant that converts novice-friendly music descriptions into expert descriptions.\n\n"
         "Transform the given input novice-level prompt into a prompt that a user with extensive music training and terminologies would use to prompt music generation models.\n\n"
         "Keep the instruments, genres, mood, and other information that represents the essence of the music.\n\n"
     )
     
+    # Construct the prompt
+    prompt = "\n---\nGiven these examples below:\n\n"
+    
+    # Add examples for in-context learning
+    for expert, novice in zip(expert_examples, novice_examples):
+        prompt += f"Novice: {novice}\nExpert: {expert}\n\n"
+        
+    # use instruction in prompt
+    prompt += instruction
+    prompt += f"Novice: {novice_caption}\nExpert:"
+    
+    return prompt
+
+def generate_expert_description(novice_caption, expert_examples, novice_examples, max_new_tokens=256, temperature=0.7):
+    """Generate an expert-level description using LLaMA 3.1."""
     try:
         prompt = create_baseline_prompt(novice_caption, expert_examples, novice_examples)
         
