@@ -45,7 +45,8 @@ def generate_expert_description(novice_caption, expert_examples, novice_examples
         # Generate output from the model
         outputs = model.generate(
             input_ids=inputs["input_ids"],
-            max_length=max_length,
+            max_new_tokens=100,
+            attention_mask=inputs["attention_mask"],
             temperature=temperature,
             do_sample=True
         )
