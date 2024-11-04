@@ -3,6 +3,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import time
 from tqdm import tqdm
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # LLaMA in-context baseline 
@@ -14,6 +15,11 @@ load_dotenv()
 model_name = "meta-llama/Meta-LLaMA-3-8B" 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"))
 model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"))
+
+# Move the model to GPU 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+print(f"Model loaded on {device}")
 
 def create_baseline_prompt(novice_caption, expert_examples, novice_examples):
     """Create a prompt for LLaMA using in-context learning examples."""
@@ -28,7 +34,7 @@ def create_baseline_prompt(novice_caption, expert_examples, novice_examples):
     
     return prompt
 
-def generate_expert_description(novice_caption, expert_examples, novice_examples, max_length=512, temperature=0.7):
+def generate_expert_description(novice_caption, expert_examples, novice_examples, max_new_tokens=100, temperature=0.7):
     """Generate an expert-level description using LLaMA 3."""
     instruction = (
         "You are a helpful assistant that converts novice-friendly music descriptions into expert descriptions.\n\n"
@@ -39,16 +45,17 @@ def generate_expert_description(novice_caption, expert_examples, novice_examples
     try:
         prompt = create_baseline_prompt(novice_caption, expert_examples, novice_examples)
         
-        # Tokenize the input prompt
-        inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
+        # Tokenize the input prompt and move tensors to the GPU
+        inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True).to(device)
         
         # Generate output from the model
         outputs = model.generate(
             input_ids=inputs["input_ids"],
-            max_new_tokens=100,
             attention_mask=inputs["attention_mask"],
+            max_new_tokens=max_new_tokens,
             temperature=temperature,
-            do_sample=True
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id  # Set pad token ID to avoid warnings
         )
         
         # Decode the output to text
@@ -71,7 +78,7 @@ def main():
     
     # Initialize the expert descriptions list
     expert_descriptions = []
-    batch_size = 10  # Adjust batch size based on your hardware capabilities
+    batch_size = 10  # Adjust batch size 
 
     # Batch processing
     for i in tqdm(range(0, len(dataframe), batch_size), desc="Generating expert descriptions"):
@@ -80,7 +87,7 @@ def main():
         for novice_caption in batch:
             expert_desc = generate_expert_description(novice_caption, expert_examples, novice_examples)
             expert_descriptions.append(expert_desc)
-            time.sleep(1)  # Adjust or remove based on local processing needs
+            time.sleep(1)  # Adjust or remove 
 
     # Add the expert descriptions to the dataframe
     dataframe.loc[:, 'gen_expert'] = expert_descriptions
