@@ -4,3 +4,8 @@ pandas
 python-dotenv
 torch
 tqdm
+evaluate
+lexical_diversity
+textstat
+nltk
+rouge_score
