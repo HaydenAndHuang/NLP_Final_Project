@@ -101,7 +101,10 @@ if __name__ == "__main__":
     ttr, mtld = ttr_and_MTLD(predictions)
 
     predictions_test = list(df_test['gen_expert'])
-    tr_ground_truths = list(df_train['caption'])
+    tr_ground_truths = list(df_test['novice']) 
+    # here we are measuring the quality of novice to expert rewrite models (baseline or fine-tuning), 
+    # so tr_ground_truths are taken as the novice prompts of the test set
+    # ex. vocab_novel_score means percentage of new vocab in expert prompt (test) that are not among the nocive prompt (test).
     vocab_size, vocab_novel_score = vocab_novelty(predictions_test, tr_ground_truths)
     cap_novel_score = caption_novelty(predictions_test, tr_ground_truths)
 
@@ -122,6 +125,6 @@ if __name__ == "__main__":
 
     print(results)
 
-    # GPT3.5 Baseline: {'bleu1': 0.25704510738713243, 'bleu2': 0.12273664637607094, 'bleu3': 0.06160973462259854, 'bleu4': 0.032996697123756684, 'meteor_1.0': 0.22219421581595938, 'rougeL': 0.23210230174486346, 'ttr': 0.020243708551578442, 'MTLD': 74.18671929910059, 'FRE': 54.83, 'vocab_size': 2218, 'vocab_novelty': 0.4328223624887286, 'caption_novelty': 1.0}
+    # GPT3.5 Baseline: {'bleu1': 0.25704510738713243, 'bleu2': 0.12273664637607094, 'bleu3': 0.06160973462259854, 'bleu4': 0.032996697123756684, 'meteor_1.0': 0.22219421581595938, 'rougeL': 0.23210230174486346, 'ttr': 0.020243708551578442, 'MTLD': 74.18671929910059, 'FRE': 54.83, 'vocab_size': 2218, 'vocab_novelty': 0.5144274120829576, 'caption_novelty': 0.996996996996997}
     # LLaMA3 8B Baseline: {'bleu1': 0.2876122721776681, 'bleu2': 0.13044658900565362, 'bleu3': 0.05543368714479693, 'bleu4': 0.02548626607718937, 'meteor_1.0': 0.19542638764382586, 'rougeL': 0.19459374081170858, 'ttr': 0.012396387296116938, 'MTLD': 59.02170950646127, 'FRE': 20.83}
     # Custom Prompts Metrics: {'ttr': 0.028557627737656247, 'MTLD': 54.04936643155692, 'FRE': 71.95}
