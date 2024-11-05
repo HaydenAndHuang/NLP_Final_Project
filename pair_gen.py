@@ -117,7 +117,7 @@ def main():
         
         # Process each caption in the batch
         for novice_caption in batch:
-            novice_desc = generate_exeprt_description(
+            novice_desc = generate_expert_description(
                 novice_caption=novice_caption,
                 expert_examples=expert_examples,
                 novice_examples=novice_examples
