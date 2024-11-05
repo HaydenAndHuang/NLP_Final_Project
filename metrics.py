@@ -6,7 +6,9 @@ import torch
 # import torchmetrics.retrieval as retrieval_metrics
 
 import pandas as pd
-
+from lexical_diversity import lex_div as ld
+import textstat
+textstat.set_lang('en')
 
 # CAPTIONING METRICS
 def bleu(predictions, ground_truths, order):
@@ -66,20 +68,26 @@ def rouge(predictions, ground_truths):
 #     novel_c = len(new_caption) / len(unique_pred_captions)
 #     return novel_c
 
-def type_token_ration(predictions):
-    tokens = [word for text in predictions for word in text.split()]
-    # Count unique words (types)
-    unique_words = set(tokens)
-    # Calculate TTR
-    ttr = len(unique_words) / len(tokens) if tokens else 0
-    return ttr
+def ttr_and_MTLD(predictions):
+    corpus_predictions = ' '.join(text.strip() for text in predictions)
+    flt = ld.flemmatize(corpus_predictions)
+    ttr = ld.ttr(flt)
+    mtld = ld.mtld(flt)
+    return ttr, mtld
 
+def fre(predictions):
+    corpus_predictions = ' '.join(text.strip() for text in predictions)
+    return textstat.flesch_reading_ease(corpus_predictions)
+    
 
 if __name__ == "__main__":
+    # Read data for evaluation
     df = pd.read_csv('musiccaps-baseline-expert.csv')
     novice_list = list(df['novice'])
     predictions = list(df['gen_expert'])
     ground_truths = list(df['caption'])
+
+    ttr, mtld = ttr_and_MTLD(predictions)
 
     results = {
         "bleu1": bleu(predictions, ground_truths, order=1),
@@ -88,9 +96,11 @@ if __name__ == "__main__":
         "bleu4": bleu(predictions, ground_truths, order=4),
         "meteor_1.0": meteor(predictions, ground_truths),
         "rougeL": rouge(predictions, ground_truths),
-        "TTR": type_token_ration(predictions),
+        "ttr": ttr,
+        "MTLD": mtld,
+        "FRE": fre(predictions)
     }
 
     print(results)
 
-    # {'bleu1': 0.25704510738713243, 'bleu2': 0.12273664637607094, 'bleu3': 0.06160973462259854, 'bleu4': 0.032996697123756684, 'meteor_1.0': 0.22219421581595938, 'rougeL': 0.23211966437052559, 'TTR': 0.0365224208898665}
+    # {'bleu1': 0.25704510738713243, 'bleu2': 0.12273664637607094, 'bleu3': 0.06160973462259854, 'bleu4': 0.032996697123756684, 'meteor_1.0': 0.22219421581595938, 'rougeL': 0.23210230174486346, 'ttr': 0.020243708551578442, 'MTLD': 74.18671929910059, 'FRE': 54.83}
